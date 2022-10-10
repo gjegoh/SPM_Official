@@ -1,0 +1,32 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}View Job Roles{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated %}
+    <h1>View Job Roles</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="">View My Learning Journeys</a></p>
+    <br><br>
+    <div class="container-fluid">
+        <h2>Available Job Roles</h2>
+        {% for job_role in job_role_obj %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{job_role.Job_Role_Name}}</h5>
+                <p class="card-text">{{job_role.Job_Role_Desc}}</p>
+                <a href="" class="btn btn-primary">Plan Learning Journey</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

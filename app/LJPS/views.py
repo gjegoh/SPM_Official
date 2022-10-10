@@ -21,3 +21,22 @@ class SignUpView(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
+
+# endpoint to render view job roles page for staff
+def view_job_roles(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.USER:
+            job_role_obj = Job_Role.objects.all()
+            return render(
+                request,
+                'LJPS/view_job_roles.html',
+                context={
+                    'job_role_obj': job_role_obj,
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/view_job_roles.html',
+            )

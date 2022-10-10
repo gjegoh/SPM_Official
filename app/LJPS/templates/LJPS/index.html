@@ -10,7 +10,7 @@
     <h1>Index Page</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
-    <p><a href="">View Job Roles</a></p>
+    <p><a href="{% url 'view_job_roles' %}">View Job Roles</a></p>
     <p><a href="">View My Learning Journeys</a></p>
 {% else %}
 <h1>Index Page</h1>
