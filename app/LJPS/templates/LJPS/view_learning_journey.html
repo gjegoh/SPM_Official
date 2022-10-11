@@ -1,0 +1,69 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}View My Learning Journeys{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated %}
+    <h1>View My Learning Journeys</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'view_job_roles' %}">View Job Roles</a></p>
+    <br><br>
+    <div class="alert alert-success" id="delete-alert">
+        <button type="button" class="close" data-dismiss="alert">x</button>
+        You have successfully deleted a learning journey!
+    </div>
+    {% for learning_journey_id, learning_journey_details in mapped_learning_journey.items %}
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                Learning Journey ID: {{learning_journey_id}}<br><br>
+                Chosen Job Role: {{learning_journey_details.job_role}}
+            </h5>
+            <p class="card-text">
+                {% for skill_name, courses in learning_journey_details.mapped_skill_course.items %}
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-title">
+                            <strong>Required Skill:</strong> {{skill_name}}
+                        </div>
+                        <div class="card-text">
+                            <strong>Courses Taken to Fulfill Skill:</strong>
+                            <ul>
+                                {% for course in courses %}
+                                <li>
+                                    {{course.course_name}} 
+                                    {% if course.course_status == 'Ongoing' %}
+                                    <span class="badge badge-secondary">{{course.course_status}}</span>
+                                    {% else %}
+                                    <span class="badge badge-success">{{course.course_status}}</span>
+                                    {% endif %}
+                                    
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </p>
+            <a class="btn btn-primary" href="{% url 'edit_learning_journey' learning_journey_id %}">Edit Learning Journey</a>
+            <button class="btn btn-danger" id="{{learning_journey_id}}">Delete Learning Journey</button>
+        </div>
+    </div>
+    <br>
+    {% endfor %}
+    
+    <script>
+        
+    </script>
+    
+{% else %}
+<h1>Index Page</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

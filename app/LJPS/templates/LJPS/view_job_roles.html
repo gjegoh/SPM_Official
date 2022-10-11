@@ -10,7 +10,7 @@
     <h1>View Job Roles</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
-    <p><a href="">View My Learning Journeys</a></p>
+    <p><a href="{% url 'view_learning_journey' %}">View My Learning Journeys</a></p>
     <br><br>
     <div class="container-fluid">
         <h2>Available Job Roles</h2>
@@ -19,7 +19,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{job_role.Job_Role_Name}}</h5>
                 <p class="card-text">{{job_role.Job_Role_Desc}}</p>
-                <a href="" class="btn btn-primary">Plan Learning Journey</a>
+                <a href="{% url 'plan_learning_journey' job_role.Job_Role_ID %}" class="btn btn-primary">Plan Learning Journey</a>
             </div>
         </div>
         {% endfor %}

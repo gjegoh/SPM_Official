@@ -1,0 +1,87 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Plan Your Learning Journey{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated %}
+    <h1>Plan Your Learning Journey</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'view_job_roles' %}">View Job Roles</a></p>
+    <p><a href="{% url 'view_learning_journey' %}">View My Learning Journeys</a></p>
+    <br><br>
+    <div class="container-fluid">
+        <h2>Chosen Job Role: {{chosen_job_role.Job_Role_Name}}</h2>
+        <h2>Job Description: {{chosen_job_role.Job_Role_Desc}}</h2>
+        <h2>Required Skills:</h2>
+        <form action="{% url 'create_learning_journey' %}" method="POST">
+            {% csrf_token %}
+            {% for skill_obj, course_objs in mapped_skill_course_dict.items %}
+            <div class="card skill">
+                <div class="card-header">
+                    {{skill_obj.Skill_Name}} ({{skill_obj.Skill_Category}})
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Related Courses</h5>
+                    {% for course_obj in course_objs %}
+                    <div class="card">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Course ID:</strong> {{course_obj.Course_ID}}</li>
+                            <li class="list-group-item"><strong>Course Name:</strong> {{course_obj.Course_Name}}</li>
+                            <li class="list-group-item"><strong>Course Description:</strong> {{course_obj.Course_Desc}}</li>
+                            <li class="list-group-item"><strong>Course Category:</strong> {{course_obj.Course_Category}}</li>
+                            <li class="list-group-item"><strong>Course Type:</strong> {{course_obj.Course_Type}}</li>
+                            <li class="list-group-item">
+                                <strong>Fulfilled Skills:</strong>
+                                <ul>
+                                    {% for skill_obj in course_obj.Course_Fulfilled_Skill.all %}
+                                    <li>{{skill_obj.Skill_Name}}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Enroll: </strong> <input type="checkbox" name="learningJourney" value="{{course_obj.Course_ID}}">
+                            </li>
+                        </ul>
+                    </div>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+            <br>
+            <input type="hidden" name='job_role' value="{{chosen_job_role.Job_Role_ID}}">
+            <input class="btn btn-primary" type="submit" value="Save Learning Journey">
+        </form>
+
+        <!-- modal for alert -->
+        <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Alert</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="alertMessage"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'LJPS/js/plan_learning_journey.js' %}"></script>
+    
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}
