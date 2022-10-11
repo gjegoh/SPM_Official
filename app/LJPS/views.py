@@ -6,7 +6,9 @@ from django.views import generic
 from django.contrib.auth.models import User
 from LJPS.models import Job_Role, Skill, Course, Role, Staff, Registration, Learning_Journey
 from DB_init.enums import System_Role, Course_Status, Registration_Status, Completion_Status
+from django.db.models import Count, Q
 import json
+from collections import Counter
 
 # endpoint to render index page for all users
 def index(request):
