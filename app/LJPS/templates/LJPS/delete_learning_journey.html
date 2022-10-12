@@ -1,0 +1,26 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Delete Your Learning Journey{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated %}
+    <h1>Delete Your Learning Journey</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'view_job_roles' %}">View Job Roles</a></p>
+    <p><a href="{% url 'view_learning_journey' %}">View My Learning Journeys</a></p>
+    <br><br>
+    {% if status == 'success' %}
+    <h2 class="text-success">{{message}}</h2>
+    {% elif status == 'failed' %}
+    <h2 class="text-danger">{{message}}</h2>
+    {% endif %}
+{% else %}
+<h1>Index Page</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

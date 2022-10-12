@@ -262,3 +262,11 @@ def update_learning_journey(request):
                 'status': status
             }
         )
+
+# endpoint to delete learning journey for staff
+def delete_learning_journey(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        learning_journey_id = request_body['learning_journey_id']
+        Learning_Journey.objects.get(Learning_Journey_ID=learning_journey_id).delete()
+        return HttpResponse(200)

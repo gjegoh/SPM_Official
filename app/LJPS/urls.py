@@ -11,4 +11,5 @@ urlpatterns = [
     path("view_learning_journey/", views.view_learning_journey, name="view_learning_journey"),
     path("edit_learning_journey/<int:id>/", views.edit_learning_journey, name="edit_learning_journey"),
     path("update_learning_journey/", views.update_learning_journey, name="update_learning_journey"),
+    path("delete_learning_journey/", views.delete_learning_journey, name="delete_learning_journey"),
 ]
