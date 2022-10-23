@@ -1,0 +1,69 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Plan Job Roles{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated and user.is_staff %}
+    <h1>Plan Job Roles</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
+    <p><a href="">Manage All Skills</a></p>
+    <p><a href="">Plan Skills</a></p>
+    <p><a href="">Manage All Courses</a></p>
+    <br><br>
+    <div class="container-fluid">
+        <form action="{% url 'create_job_role' %}" method="POST">
+            {% csrf_token %}
+            <label for="job_role_name" class="title">Job Role Name:</label>
+            <input id='job_role_name' name="job_role_name" type="text" size="50" required>
+            <br>
+            <label for="job_role_desc" class="title">Job Role Description:</label>
+            <textarea id='job_role_desc' name="job_role_desc" rows="4" cols="50" required></textarea>
+            <br>
+            <label for="job_role_status" class="title">Job Role Status:</label>
+            <select id="job_role_status" name="job_role_status">
+                <option value="Active" selected>Active</option>
+                <option value="Retired">Retired</option>
+            </select>
+            <br>
+            <p class="title">Assigned Skills:</p>
+            {% for skill in all_skills %}
+                <input class="skill" name='assigned_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}">
+                <label for="{{skill.Skill_ID}}">{{skill.Skill_Name}}</label>
+                <br>
+            {% endfor %}
+            <br>
+            <input class="btn btn-primary" type="submit" value="Create Job Role">
+        </form>
+    </div>
+
+    <!-- modal for alert -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alert</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="alertMessage"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'LJPS/js/edit_job_role.js' %}"></script>
+
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

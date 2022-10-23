@@ -22,8 +22,8 @@ class Skill_Course_Category:
     FINANCE = 'Finance'
     CORE = 'Core'
     
-# mock course status enum
-class Course_Status:
+# mock status enum
+class Status:
     ACTIVE = 'Active'
     RETIRED = 'Retired'
 
@@ -42,3 +42,10 @@ class Registration_Status:
 class Completion_Status:
     COMPLETED = 'Completed'
     ONGOING = 'Ongoing'
+    
+# mock departments for staff
+class Department:
+    HUMAN_RESOURCE = 'Human Resource'
+    OPERATIONS = 'Operations'
+    FINANCE = 'Finance'
+    

@@ -1,0 +1,170 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Manage All Job Roles{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated and user.is_staff %}
+    <h1>Manage All Job Roles</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="">Plan Skills</a></p>
+    <p><a href="">Manage All Courses</a></p>
+    <br><br>
+    <div class="alert alert-success" id="alert">
+        <button type="button" class="close" data-dismiss="alert">x</button>
+        <p id="alertmsg"></p>
+    </div>
+    <div class="container-fluid">
+        {% for job_role in job_role_obj %}
+        <div class="card">
+            <div class="card-body">
+                <p class="card-text"><strong>Job Role Name:</strong> {{job_role.Job_Role_Name}}</p>
+                <p class="card-text"><strong>Job Role Description:</strong> {{job_role.Job_Role_Desc}}</p>
+                <p class="card-text">
+                    <strong>Job Role Status:</strong>
+                    {% if job_role.Job_Role_Status == 'Retired' %}
+                    <span class="badge badge-secondary">{{job_role.Job_Role_Status}}</span>
+                    {% else %}
+                    <span class="badge badge-success">{{job_role.Job_Role_Status}}</span>
+                    {% endif %}
+                </p>
+                <p class="card-text"><strong>Job Role Assigned Skills:</strong></p>
+                <ul>
+                    {% for skill in job_role.Job_Role_Required_Skill.all %}
+                        <li>{{skill.Skill_Name}}</li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'edit_job_role' job_role.Job_Role_ID %}" class="btn btn-primary">Edit Job Role</a>
+                <button class="btn btn-primary toggle" id="{{job_role.Job_Role_ID}}">Toggle Job Role Status</button>
+                <button class="btn btn-danger delete" id="{{job_role.Job_Role_ID}}">Delete Job Role</button>        
+            </div>
+        </div>
+        {% empty %}
+            <h2>No job roles have been created!</h2>
+        {% endfor %}
+    </div>
+
+    <!-- modal for toggle job role status -->
+    <div class="modal fade" id="toggleModal" tabindex="-1" role="dialog" aria-labelledby="toggleModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Notice</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to toggle the status of the job role?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="toggleButton">Toggle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal for toggle job role status -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Warning</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the job role?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="deleteButton">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // populates update/delete message after refresh
+        $( document ).ready(function() {
+            $('#alert').addClass('d-none')
+            $('#alertmsg').html()
+            if (sessionStorage.getItem('update')) {
+                $('#alert').removeClass('d-none')
+                $('#alertmsg').html('You have successfully updated the status of a job role!') 
+                setTimeout(function() {
+                    $('#alert').alert('close')
+                }, 3000);
+                sessionStorage.removeItem('update')
+            }
+            if (sessionStorage.getItem('delete')) {
+                $('#alert').removeClass('d-none')
+                $('#alertmsg').html('You have successfully deleted a job role!') 
+                setTimeout(function() {
+                    $('#alert').alert('close')
+                }, 3000);
+                sessionStorage.removeItem('delete')
+            }
+        });
+
+        $('.card').on('click', '.toggle', function() {
+            var job_role_id = this.id
+            $('#toggleModal').modal('show')
+            $('#toggleButton').on('click', function() {
+                fetch("{% url 'toggle_job_role_status' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type':'application/json',
+                    },
+                    mode: 'same-origin',
+                    body: JSON.stringify({
+                        'job_role_id': job_role_id
+                    })
+                })
+                .then(res => {
+                    if (res.status == 200) {
+                        sessionStorage.setItem('update', true);
+                        window.location.replace("{% url 'manage_job_roles' %}")
+                    }
+                })
+            })
+        })
+
+        $('.card').on('click', '.delete', function() {
+            var job_role_id = this.id
+            $('#deleteModal').modal('show')
+            $('#deleteButton').on('click', function() {
+                fetch("{% url 'delete_job_role' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type':'application/json',
+                    },
+                    mode: 'same-origin',
+                    body: JSON.stringify({
+                        'job_role_id': job_role_id
+                    })
+                })
+                .then(res => {
+                    if (res.status == 200) {
+                        sessionStorage.setItem('delete', true);
+                        window.location.replace("{% url 'manage_job_roles' %}")
+                    }
+                })
+            })
+        })
+    </script>
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

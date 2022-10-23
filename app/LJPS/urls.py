@@ -12,4 +12,9 @@ urlpatterns = [
     path("edit_learning_journey/<int:id>/", views.edit_learning_journey, name="edit_learning_journey"),
     path("update_learning_journey/", views.update_learning_journey, name="update_learning_journey"),
     path("delete_learning_journey/", views.delete_learning_journey, name="delete_learning_journey"),
+    path("manage_job_roles/", views.manage_job_roles, name="manage_job_roles"),
+    path("edit_job_role/<int:id>/", views.edit_job_role, name="edit_job_role"),
+    path("update_job_role/", views.update_job_role, name="update_job_role"),
+    path("plan_job_role/", views.plan_job_role, name="plan_job_role"),
+    path("create_job_role/", views.create_job_role, name="create_job_role"),
 ]

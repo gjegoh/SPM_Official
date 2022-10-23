@@ -270,3 +270,179 @@ def delete_learning_journey(request):
         learning_journey_id = request_body['learning_journey_id']
         Learning_Journey.objects.get(Learning_Journey_ID=learning_journey_id).delete()
         return HttpResponse(200)
+
+# endpoint to render page for admin to manage job roles
+def manage_job_roles(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            job_role_obj = Job_Role.objects.order_by('Job_Role_Name')
+            return render(
+                request,
+                'LJPS/manage_job_roles.html',
+                context={
+                    'job_role_obj': job_role_obj,
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/manage_job_roles.html',
+            )
+
+# endpoint to render page for admin to edit job role
+def edit_job_role(request, id):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            chosen_job_role = Job_Role.objects.get(Job_Role_ID=id)
+            all_skills = Skill.objects.filter(Skill_Status=Status.ACTIVE)
+            assigned_skills = chosen_job_role.Job_Role_Required_Skill.all()
+            return render(
+                request,
+                'LJPS/edit_job_roles.html',
+                context={
+                    'chosen_job_role': chosen_job_role,
+                    'all_skills': all_skills,
+                    'assigned_skills': assigned_skills
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/edit_job_roles.html',
+            )
+            
+# endpoint to handle update of job roles for admin
+def update_job_role(request):
+    if request.method == 'POST':
+        message = "You have successfully updated your learning journey!"
+        status = 'success'
+        changed_name = False
+        new_skill_lst = list(set(request.POST.getlist('assigned_skills')))
+        job_role_id = int(request.POST.get('job_role_id'))
+        new_job_role_name = request.POST.get('job_role_name')
+        job_role = Job_Role.objects.get(Job_Role_ID=job_role_id)
+        if new_job_role_name.lower() != job_role.Job_Role_Name.lower():
+            if len(Job_Role.objects.filter(Job_Role_Name__iexact=new_job_role_name)) > 0:
+                message = "A job role with your updated job role name already exists!"
+                status = 'failed'
+            else:
+                Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Name=new_job_role_name.title())
+                changed_name = True
+        if status == 'success':
+            changed_desc = False
+            new_job_role_desc = request.POST.get('job_role_desc')
+            if new_job_role_desc.lower() != job_role.Job_Role_Desc.lower():
+                Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Desc=new_job_role_desc)
+                changed_desc = True
+            changed_status = False
+            new_job_role_status = request.POST.get('job_role_status')
+            if new_job_role_status != job_role.Job_Role_Status:
+                Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=new_job_role_status)
+                changed_status = True
+            old_skill_lst = job_role.Job_Role_Required_Skill.all()
+            staff = Staff.objects.get(User=request.user)
+            new_skill_obj = []
+            for skill_id in new_skill_lst:
+                skill = Skill.objects.get(Skill_ID=skill_id)
+                new_skill_obj.append(skill)
+            skill_unchanged = Counter(new_skill_obj) == Counter(old_skill_lst)
+            if skill_unchanged and changed_name == False and changed_desc == False and changed_status == False:
+                message = "No changes to the job role was made!"
+                status = 'failed'
+            elif skill_unchanged == False:
+                duplicate_check = Job_Role.objects.annotate(
+                    num_courses=Count('Job_Role_Required_Skill'),
+                    num_courses_match=Count(
+                        'Job_Role_Required_Skill', 
+                        filter=Q(Job_Role_Required_Skill__in=new_skill_obj)
+                    )
+                ).filter(
+                    num_courses=len(new_skill_obj),
+                    num_courses_match=len(new_skill_obj)
+                )
+                if duplicate_check.exists():
+                    message = "A job role with your assigned skills already exists!"
+                    status = 'failed'
+                else:
+                    for skill in new_skill_obj:
+                        if skill not in old_skill_lst:
+                            job_role.Job_Role_Required_Skill.add(skill)
+                    for skill in old_skill_lst:
+                        if skill not in new_skill_obj:
+                            job_role.Job_Role_Required_Skill.remove(skill)
+        return render(
+            request,
+            'LJPS/update_job_role.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )
+
+# endpoint to render page for admin to plan job role
+def plan_job_role(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            all_skills = Skill.objects.filter(Skill_Status=Status.ACTIVE)
+            return render(
+                request,
+                'LJPS/plan_job_role.html',
+                context={
+                    'all_skills': all_skills
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/plan_job_role.html',
+            )
+
+# endpoint to handle creation of job roles for admin
+def create_job_role(request):
+    if request.method == 'POST':
+        message = "You have successfully created a job role!"
+        status = 'success'
+        skill_lst = list(set(request.POST.getlist('assigned_skills')))
+        job_role_name = request.POST.get('job_role_name')
+        job_role_desc = request.POST.get('job_role_desc')
+        job_role_status = request.POST.get('job_role_status')
+        if len(Job_Role.objects.filter(Job_Role_Name__iexact=job_role_name)) > 0:
+            message = "A job role with your specified name already exists!"
+            status = 'failed'
+        else:
+            skill_obj = []
+            for skill_id in skill_lst:
+                skill = Skill.objects.get(Skill_ID=skill_id)
+                skill_obj.append(skill)
+            duplicate_check = Job_Role.objects.annotate(
+                num_courses=Count('Job_Role_Required_Skill'),
+                num_courses_match=Count(
+                    'Job_Role_Required_Skill', 
+                    filter=Q(Job_Role_Required_Skill__in=skill_obj)
+                )
+            ).filter(
+                num_courses=len(skill_obj),
+                num_courses_match=len(skill_obj)
+            )
+            if duplicate_check.exists():
+                message = "A job role with your assigned skills already exists!"
+                status = 'failed'
+            else:
+                new_job_role = Job_Role.objects.create(
+                    Job_Role_Name=job_role_name.title(),
+                    Job_Role_Desc=job_role_desc,
+                    Job_Role_Status=job_role_status
+                )
+                for skill in skill_obj:
+                    new_job_role.Job_Role_Required_Skill.add(skill)
+        return render(
+            request,
+            'LJPS/create_job_role.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )
