@@ -446,3 +446,23 @@ def create_job_role(request):
                 'status': status
             }
         )
+
+# endpoint to toggle job role status for admin
+def toggle_job_role_status(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        job_role_id = request_body['job_role_id']
+        job_role = Job_Role.objects.get(Job_Role_ID=job_role_id)
+        if job_role.Job_Role_Status == Status.ACTIVE:
+            Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=Status.RETIRED)
+        else:
+            Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=Status.ACTIVE)
+        return HttpResponse(200)
+    
+# endpoint to delete job role for admin
+def delete_job_role(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        job_role_id = request_body['job_role_id']
+        Job_Role.objects.get(Job_Role_ID=job_role_id).delete()
+        return HttpResponse(200)
