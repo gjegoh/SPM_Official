@@ -31,7 +31,7 @@ class Skill(models.Model):
     Skill_ID = models.BigAutoField(primary_key=True)
     Skill_Name = models.CharField(max_length=50)
     Skill_Category = models.CharField(max_length=50)
-    # Skill_Level = models.CharField(max_length=50)
+    Skill_Status = models.CharField(max_length=15, null=True, blank=True)
     
     def __str__(self):
         return self.Skill_Name
@@ -40,7 +40,7 @@ class Course(models.Model):
     Course_ID = models.CharField(max_length=20, primary_key=True)
     Course_Name = models.CharField(max_length=50)
     Course_Desc = models.CharField(max_length=255)
-    Course_Status = models.CharField(max_length=15)
+    Course_Status = models.CharField(max_length=15, null=True, blank=True)
     Course_Type = models.CharField(max_length=10)
     Course_Category = models.CharField(max_length=50)
     Course_Fulfilled_Skill = models.ManyToManyField(Skill)
@@ -59,6 +59,7 @@ class Job_Role(models.Model):
     Job_Role_Name = models.CharField(max_length=50)
     Job_Role_Desc = models.TextField()
     Job_Role_Required_Skill = models.ManyToManyField(Skill)
+    Job_Role_Status = models.CharField(max_length=15, null=True, blank=True)
 
     def __str__(self):
         return self.Job_Role_Name

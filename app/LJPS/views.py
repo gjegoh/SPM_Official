@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.models import User
 from LJPS.models import Job_Role, Skill, Course, Role, Staff, Registration, Learning_Journey
-from DB_init.enums import System_Role, Course_Status, Registration_Status, Completion_Status
+from DB_init.enums import System_Role, Status, Registration_Status, Completion_Status
 from django.db.models import Count, Q
 import json
 from collections import Counter
@@ -54,7 +54,7 @@ def plan_learning_journey(request, id):
             for skill_obj in required_skill_obj:
                 mapped_skill_course_dict[skill_obj] = Course.objects.filter(
                     Course_Fulfilled_Skill=skill_obj,
-                    Course_Status=Course_Status.ACTIVE
+                    Course_Status=Status.ACTIVE
                 )
             return render(
                 request,
@@ -178,7 +178,7 @@ def edit_learning_journey(request, id):
                 related_course_dict = {}
                 related_course_lst = Course.objects.filter(
                     Course_Fulfilled_Skill=skill_obj,
-                    Course_Status=Course_Status.ACTIVE
+                    Course_Status=Status.ACTIVE
                 )
                 for course in related_course_lst:
                     if course in chosen_course_objs:
