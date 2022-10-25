@@ -19,4 +19,7 @@ urlpatterns = [
     path("create_job_role/", views.create_job_role, name="create_job_role"),
     path("toggle_job_role_status/", views.toggle_job_role_status, name="toggle_job_role_status"),
     path("delete_job_role/", views.delete_job_role, name="delete_job_role"),
+    path("manage_course/", views.manage_course, name="manage_course"),
+    path("edit_course/<str:id>/", views.edit_course, name="edit_course"),
+    path("update_course/", views.update_course, name="update_course"),
 ]

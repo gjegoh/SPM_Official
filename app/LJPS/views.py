@@ -466,3 +466,92 @@ def delete_job_role(request):
         job_role_id = request_body['job_role_id']
         Job_Role.objects.get(Job_Role_ID=job_role_id).delete()
         return HttpResponse(200)
+
+# endpoint to render page for admin to manage courses
+def manage_course(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            course_obj = Course.objects.order_by('Course_ID')
+            return render(
+                request,
+                'LJPS/manage_course.html',
+                context={
+                    'course_obj': course_obj
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/manage_course.html',
+            )
+            
+# endpoint to render page for admin to edit courses
+def edit_course(request, id):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            chosen_course = Course.objects.get(Course_ID=id)
+            all_skills = Skill.objects.filter(Skill_Status=Status.ACTIVE)
+            fulfilled_skills = chosen_course.Course_Fulfilled_Skill.all()
+            return render(
+                request,
+                'LJPS/edit_course.html',
+                context={
+                    'chosen_course': chosen_course,
+                    'all_skills': all_skills,
+                    'fulfilled_skills': fulfilled_skills
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/edit_course.html',
+            )
+            
+# endpoint to handle update of courses for admin
+def update_course(request):
+    if request.method == 'POST':
+        message = "You have successfully updated a course!"
+        status = 'success'
+        new_skill_lst = list(set(request.POST.getlist('fulfilled_skills')))
+        course_id = request.POST.get('course_id')
+        course = Course.objects.get(Course_ID=course_id)
+        new_skill_obj = []
+        for skill_id in new_skill_lst:
+            skill = Skill.objects.get(Skill_ID=skill_id)
+            new_skill_obj.append(skill)
+        old_skill_lst = course.Course_Fulfilled_Skill.all()
+        skill_unchanged = Counter(new_skill_obj) == Counter(old_skill_lst)
+        if skill_unchanged:
+            message = "No changes to the course was made!"
+            status = 'failed'
+        elif skill_unchanged == False:
+            duplicate_check = Course.objects.annotate(
+                num_courses=Count('Course_Fulfilled_Skill'),
+                num_courses_match=Count(
+                    'Course_Fulfilled_Skill', 
+                    filter=Q(Course_Fulfilled_Skill__in=new_skill_obj)
+                )
+            ).filter(
+                num_courses=len(new_skill_obj),
+                num_courses_match=len(new_skill_obj)
+            )
+            if duplicate_check.exists():
+                message = "A course with your fulfilled skills already exists!"
+                status = 'failed'
+            else:
+                for skill in new_skill_obj:
+                    if skill not in old_skill_lst:
+                        course.Course_Fulfilled_Skill.add(skill)
+                for skill in old_skill_lst:
+                    if skill not in new_skill_obj:
+                        course.Course_Fulfilled_Skill.remove(skill)
+        return render(
+            request,
+            'LJPS/update_course.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )

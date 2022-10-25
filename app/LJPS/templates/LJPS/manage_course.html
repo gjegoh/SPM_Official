@@ -1,0 +1,53 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Manage All Courses{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated and user.is_staff %}
+    <h1>Manage All Courses</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
+    <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
+    <br><br>
+    <div class="container-fluid">
+        {% for course in course_obj %}
+        <div class="card">
+            <div class="card-body">
+                <p class="card-text"><strong>Course ID:</strong> {{course.Course_ID}}</p>
+                <p class="card-text"><strong>Course Name:</strong> {{course.Course_Name}}</p>
+                <p class="card-text"><strong>Course Description:</strong> {{course.Course_Desc}}</p>
+                <p class="card-text">
+                    <strong>Course Status:</strong>
+                    {% if course.Course_Status == 'Retired' %}
+                    <span class="badge badge-secondary">{{course.Course_Status}}</span>
+                    {% else %}
+                    <span class="badge badge-success">{{course.Course_Status}}</span>
+                    {% endif %}
+                </p>
+                <p class="card-text"><strong>Course Type:</strong> {{course.Course_Type}}</p>
+                <p class="card-text"><strong>Course Category:</strong> {{course.Course_Category}}</p>
+                <p class="card-text"><strong>Course Fulfilled Skills:</strong></p>
+                <ul>
+                    {% for skill in course.Course_Fulfilled_Skill.all %}
+                        <li>{{skill.Skill_Name}}</li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'edit_course' course.Course_ID %}" class="btn btn-primary">Edit Course</a>     
+            </div>
+        </div>
+        {% empty %}
+            <h2>No courses have been created!</h2>
+        {% endfor %}
+    </div>
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

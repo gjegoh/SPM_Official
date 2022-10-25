@@ -1,0 +1,66 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Edit Course{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated and user.is_staff %}
+    <h1>Edit Course</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
+    <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
+    <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
+    <br><br>
+    <div class="container-fluid">
+        <form action="{% url 'update_course' %}" method="POST">
+            {% csrf_token %}
+            <p><span class="title">Course ID:</span> {{chosen_course.Course_ID}}</p>
+            <p><span class="title">Course Name:</span> {{chosen_course.Course_Name}}</p>
+            <p class="title">Fulfilled Skills:</p>
+            {% for skill in all_skills %}
+                {% if skill in fulfilled_skills %}
+                <input class="skill" name='fulfilled_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}" checked>
+                <label for="{{skill.Skill_ID}}">{{skill.Skill_Name}}</label>
+                {% else %}
+                <input class="skill" name='fulfilled_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}">
+                <label for="{{skill.Skill_ID}}">{{skill.Skill_Name}}</label>
+                {% endif %}
+                <br>
+            {% endfor %}
+            <br>
+            <input type="hidden" name='course_id' value="{{chosen_course.Course_ID}}">
+            <input class="btn btn-primary" type="submit" value="Update Course">
+        </form>
+
+        <!-- modal for alert -->
+        <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Alert</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="alertMessage"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'LJPS/js/edit_course.js' %}"></script>
+    
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}
