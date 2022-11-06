@@ -40,14 +40,16 @@ admin.site.register(Registration, RegistrationAdmin)
 class SkillAdmin(admin.ModelAdmin):
     list_display = (
         "Skill_ID",
-        "Skill_Name"
+        "Skill_Name",
+        "Skill_Status"
     )
 admin.site.register(Skill, SkillAdmin)
 
 class Job_RoleAdmin(admin.ModelAdmin):
     list_display = (
         "Job_Role_ID",
-        "Job_Role_Name"
+        "Job_Role_Name",
+        "Job_Role_Status"
     )
 admin.site.register(Job_Role, Job_RoleAdmin)
 

@@ -13,8 +13,8 @@
     {% if user.is_staff %}
     <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
     <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
-    <p><a href="">Manage All Skills</a></p>
-    <p><a href="">Plan Skills</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
     <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
     {% else %}
     <p><a href="{% url 'view_job_roles' %}">View Available Job Roles</a></p>

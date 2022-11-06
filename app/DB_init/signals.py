@@ -1,52 +1,64 @@
 def initial_web_app_group(sender, **kwargs):
     from django.contrib.auth.models import User
-    from LJPS.models import Job_Role, Skill, Course, Role, Staff
+    from LJPS.models import Job_Role, Skill, Course, Role, Staff, Registration
+    from django.conf import settings
     from .enums import System_Role, Skill_Course_Category, Status, Course_Type, Department
-        
-    # create mock django users, staff and roles
+    import csv
+    import os
+
+    # import roles csv
+    if not Role.objects.exists():
+        print("###   Importing role.csv  ###")
+        role_csv = open("static/role.csv")
+        roles = csv.reader(role_csv)
+        next(roles, None)
+        role_dict = {}
+        for role in roles:
+            role_dict[role[0]] = Role.objects.create(Role_ID=int(role[0]), Role_Name=role[1])
+    
+    # import staff csv
     if not Staff.objects.exists():
-        print("###   Creating mock django users, staff and assigning roles  ###")
-        Staff.objects.create(
-            User=User.objects.create_superuser('admin', '', 'admin'),
-            Staff_FName='HR',
-            Staff_LName='Admin',
-            Dept=Department.HUMAN_RESOURCE,
-            Email='hradmin@gmail.com',
-            Role=Role.objects.create(Role_Name=System_Role.ADMIN)
-        )
-        user_role = Role.objects.create(Role_Name=System_Role.USER)
-        Staff.objects.create(
-            User=User.objects.create_user('hr', '', 'hr'),
-            Staff_FName='HR',
-            Staff_LName='User',
-            Dept=Department.HUMAN_RESOURCE,
-            Email='hruser@gmail.com',
-            Role=user_role
-        )
-        Staff.objects.create(
-            User=User.objects.create_user('learner1', '', 'learner1'),
-            Staff_FName='Learner',
-            Staff_LName='One',
-            Dept=Department.FINANCE,
-            Email='learnerone@gmail.com',
-            Role=user_role
-        )
-        Staff.objects.create(
-            User=User.objects.create_user('learner2', '', 'learner2'),
-            Staff_FName='Learner',
-            Staff_LName='Two',
-            Dept=Department.OPERATIONS,
-            Email='learnertwo@gmail.com',
-            Role=user_role
-        )
-        Staff.objects.create(
-            User=User.objects.create_user('manager', '', 'manager'),
-            Staff_FName='Manager',
-            Staff_LName='Boss',
-            Dept=Department.OPERATIONS,
-            Email='managerboss@gmail.com',
-            Role=Role.objects.create(Role_Name=System_Role.MANAGER)
-        )
+        print("###   Importing staff.csv  ###")
+        # create mock django user accounts
+        admin = User.objects.create_superuser('admin', '', 'admin')
+        learner1 = User.objects.create_user('learner1', '', 'learner1')
+        staff_csv = open("static/staff.csv")
+        staffs = csv.reader(staff_csv)
+        next(staffs, None)
+        admin_count = 0
+        learner_count = 0
+        for staff in staffs:
+            if staff[5] == '1' and admin_count < 1:
+                Staff.objects.create(
+                    User=admin,
+                    Staff_ID=int(staff[0]),
+                    Staff_FName=staff[1],
+                    Staff_LName=staff[2],
+                    Dept=staff[3],
+                    Email=staff[4],
+                    Role=role_dict[staff[5]]
+                )
+                admin_count += 1
+            elif staff[5] == '2' and learner_count < 1:
+                Staff.objects.create(
+                    User=learner1,
+                    Staff_ID=int(staff[0]),
+                    Staff_FName=staff[1],
+                    Staff_LName=staff[2],
+                    Dept=staff[3],
+                    Email=staff[4],
+                    Role=role_dict[staff[5]]
+                )
+                learner_count += 1
+            else:
+                Staff.objects.create(
+                    Staff_ID=int(staff[0]),
+                    Staff_FName=staff[1],
+                    Staff_LName=staff[2],
+                    Dept=staff[3],
+                    Email=staff[4],
+                    Role=role_dict[staff[5]]
+                )
     
     # create mock job roles
     if not Job_Role.objects.exists():
@@ -66,10 +78,6 @@ def initial_web_app_group(sender, **kwargs):
             Job_Role_Desc="Drives project development activities",
             Job_Role_Status=Status.RETIRED
         )
-        # talent_management_manager = Job_Role.objects.create(
-        #     Job_Role_Name='Talent Management Manager',
-        #     Job_Role_Desc="Implements programmes to groom talent in the organization"
-        # )
 
     # create mock skills and assign skills to job roles
     if not Skill.objects.exists():
@@ -138,156 +146,60 @@ def initial_web_app_group(sender, **kwargs):
             communication,
             teamwork
         )
-        # organisational_risk_management = Skill.objects.create(
-        #     Skill_Name="Organisational Risk Management", 
-        #     Skill_Category=Skill_Course_Category.TECHNICAL
-        # )
-        # decision_making = Skill.objects.create(
-        #     Skill_Name="Decision Making", 
-        #     Skill_Category=Skill_Course_Category.GENERIC
-        # )
-        # problem_solving = Skill.objects.create(
-        #     Skill_Name="Problem Solving", 
-        #     Skill_Category=Skill_Course_Category.GENERIC 
-        # )
-        # project_development_engineer.Job_Role_Required_Skill.add(
-        #     business_performance_management,
-        #     organisational_risk_management,
-        #     decision_making,
-        #     problem_solving
-        # )
-        # Talent Management Manager
-        # employee_mobility_management= Skill.objects.create(
-        #     Skill_Name="Employee Mobility Management", 
-        #     Skill_Category=Skill_Course_Category.TECHNICAL
-        # )
-        # talent_management= Skill.objects.create(
-        #     Skill_Name="Talent Management", 
-        #     Skill_Category=Skill_Course_Category.TECHNICAL
-        # )
-        # developing_people= Skill.objects.create(
-        #     Skill_Name="Developing People", 
-        #     Skill_Category=Skill_Course_Category.GENERIC
-        # )
-        # interpersonal_skills = Skill.objects.create(
-        #     Skill_Name="Interpersonal Skills", 
-        #     Skill_Category=Skill_Course_Category.GENERIC 
-        # )
-        # talent_management_manager.Job_Role_Required_Skill.add(
-        #     employee_mobility_management,
-        #     talent_management,
-        #     developing_people,
-        #     interpersonal_skills
-        # )
 
-    # create mock courses and assign skills to courses 
+    # import course.csv
     if not Course.objects.exists():
-        print('###   Creating mock courses and assigning skills to courses   ###')
-        # sales courses
-        marketing_101 = Course.objects.create(
-            Course_ID='S-123',
-            Course_Name='Marketing 101',
-            Course_Desc='Teaches you everything about marketing',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.INTERNAL,
-            Course_Category=Skill_Course_Category.SALES
-        )
-        marketing_101.Course_Fulfilled_Skill.add(
-            affiliate_marketing,
-            content_management
-        )
-        intro_to_affiliate_marketing = Course.objects.create(
-            Course_ID='S-321',
-            Course_Name='Intro to Affiliate Marketing',
-            Course_Desc='Teaches you the basics of affiliate marketing',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.EXTERNAL,
-            Course_Category=Skill_Course_Category.SALES
-        )
-        intro_to_affiliate_marketing.Course_Fulfilled_Skill.add(
-            affiliate_marketing
-        )
-        intro_to_content_management = Course.objects.create(
-            Course_ID='S-412',
-            Course_Name='Intro to Content Management',
-            Course_Desc='Teaches you the basics of content management',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.INTERNAL,
-            Course_Category=Skill_Course_Category.SALES
-        )
-        intro_to_content_management.Course_Fulfilled_Skill.add(
-            content_management
-        )
-        # finance courses
-        finance_101 = Course.objects.create(
-            Course_ID='F-567',
-            Course_Name='Finance 101',
-            Course_Desc='Teaches you everything about finance',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.EXTERNAL,
-            Course_Category=Skill_Course_Category.FINANCE
-        )
-        finance_101.Course_Fulfilled_Skill.add(
-            cost_management,
-            data_and_statistical_analytics
-        )
-        intro_to_cost_management = Course.objects.create(
-            Course_ID='F-786',
-            Course_Name='Intro to Cost Management',
-            Course_Desc='Teaches you the basics of cost management',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.INTERNAL,
-            Course_Category=Skill_Course_Category.FINANCE
-        )
-        intro_to_cost_management.Course_Fulfilled_Skill.add(
-            cost_management
-        )
-        intro_to_data_and_statistical_analytics = Course.objects.create(
-            Course_ID='F-854',
-            Course_Name='Intro to Data and Statistical Analytics',
-            Course_Desc='Teaches you the basics of data and statistical analytics',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.INTERNAL,
-            Course_Category=Skill_Course_Category.FINANCE
-        )
-        intro_to_data_and_statistical_analytics.Course_Fulfilled_Skill.add(
-            data_and_statistical_analytics
-        )
-        # core courses
-        collaboration_101 = Course.objects.create(
-            Course_ID='C-705',
-            Course_Name='Collaboration 101',
-            Course_Desc='Teaches you everything about collaboration',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.INTERNAL,
-            Course_Category=Skill_Course_Category.CORE
-        )
-        collaboration_101.Course_Fulfilled_Skill.add(
-            teamwork,
-            communication
-        )
-        digital_world_101 = Course.objects.create(
-            Course_ID='C-531',
-            Course_Name='Digital World 101',
-            Course_Desc='Teaches you everything about the digital world',
-            Course_Status=Status.ACTIVE,
-            Course_Type=Course_Type.EXTERNAL,
-            Course_Category=Skill_Course_Category.CORE
-        )
-        digital_world_101.Course_Fulfilled_Skill.add(
-            digital_literacy,
-            sense_making
-        )
-        # retired courses
-        intro_to_communication = Course.objects.create(
-            Course_ID='C-945',
-            Course_Name='Intro to Communication',
-            Course_Desc='Teaches you everything about how to communicate',
-            Course_Status=Status.RETIRED,
-            Course_Type=Course_Type.EXTERNAL,
-            Course_Category=Skill_Course_Category.CORE
-        )
-        intro_to_communication.Course_Fulfilled_Skill.add(
-            communication
-        )
+        print('###   Importing course.csv   ###')
+        course_csv = open("static/courses.csv", encoding='cp1252')
+        courses = csv.reader(course_csv)
+        next(courses, None)
+        course_count = 0
+        core_count = 0
+        non_core_count = 0
+        course_dict_1 = {
+            0: [affiliate_marketing, content_management],
+            1: [affiliate_marketing],
+            2: [content_management],
+            3: [cost_management, data_and_statistical_analytics],
+            4: [cost_management],
+            5: [data_and_statistical_analytics]
+        }
+        course_dict_2 = {
+            0: [teamwork, communication],
+            1: [digital_literacy, sense_making]
+        }
+        for course in courses:
+            course[1] = Course.objects.create(
+                Course_ID=course[0],
+                Course_Name=course[1],
+                Course_Desc=course[2],
+                Course_Status=course[3],
+                Course_Type=course[4],
+                Course_Category=course[5]
+            )
+            if course_count < 8 and course[3] == Status.ACTIVE:
+                if course[5] == Skill_Course_Category.CORE and core_count < 2:
+                    for skill in course_dict_2[core_count]:
+                        course[1].Course_Fulfilled_Skill.add(skill)
+                    course_count += 1
+                    core_count += 1
+                elif course[5] != Skill_Course_Category.CORE and non_core_count < 6:
+                    for skill in course_dict_1[non_core_count]:
+                        course[1].Course_Fulfilled_Skill.add(skill)
+                    course_count += 1
+                    non_core_count += 1
 
+    # import registration.csv
+    if not Registration.objects.exists():
+        print('###   Importing registration.csv   ###')
+        reg_csv = open("static/registration.csv")
+        regs = csv.reader(reg_csv)
+        next(regs, None)
+        for reg in regs:
+            Registration.objects.create(
+                Reg_ID=int(reg[0]),
+                Course=Course.objects.get(Course_ID=reg[1]),
+                Staff=Staff.objects.get(Staff_ID=int(reg[2])),
+                Reg_Status=reg[3],
+                Completion_Status=reg[4]
+            )

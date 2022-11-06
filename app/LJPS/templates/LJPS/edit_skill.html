@@ -1,0 +1,56 @@
+{% extends 'LJPS/base.html' %}
+{% load static %}
+
+{% block head %}
+{% block title %}Edit Skill{% endblock %}
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated and user.is_staff %}
+    <h1>Edit Skill</h1>
+    <p>Hi {{ user.username }}!</p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
+    <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
+    <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
+    <br><br>
+    <div class="container-fluid">
+        <form action="{% url 'update_skill' %}" method="POST">
+            {% csrf_token %}
+            <label for="skill_name" class="title">Skill Name:</label>
+            <input id='skill_name' name="skill_name" type="text" value="{{chosen_skill.Skill_Name}}" size="50" maxlength="50" required>
+            <br>
+            <label for="skill_category" class="title">Skill Category:</label>
+            <select id="skill_category" name="skill_category">
+                {% for category in skill_category %}
+                    {% if chosen_skill.Skill_Category == category %}
+                    <option value="{{category}}" selected>{{category}}</option>
+                    {% else %}
+                    <option value="{{category}}">{{category}}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <br>
+            <label for="skill_status" class="title">Skill Status:</label>
+            <select id="skill_status" name="skill_status">
+                {% if chosen_skill.Skill_Status == 'Active' %}
+                <option value="Active" selected>Active</option>
+                <option value="Retired">Retired</option>
+                {% else %}
+                <option value="Active">Active</option>
+                <option value="Retired" selected>Retired</option>
+                {% endif %}
+            </select>
+            <br>
+            <input type="hidden" name='skill_id' value="{{chosen_skill.Skill_ID}}">
+            <input class="btn btn-primary" type="submit" value="Update Skill">
+        </form>
+    </div>
+{% else %}
+    <h1>Index</h1>
+    <p>You are not logged in</p>
+    <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}

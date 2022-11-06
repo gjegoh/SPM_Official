@@ -2,16 +2,16 @@
 {% load static %}
 
 {% block head %}
-{% block title %}Manage All Job Roles{% endblock %}
+{% block title %}Manage All Skills{% endblock %}
 {% endblock %}
 
 {% block body %}
 {% if user.is_authenticated and user.is_staff %}
-    <h1>Manage All Job Roles</h1>
+    <h1>Manage All Skills</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
     <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
-    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
     <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
     <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
     <br><br>
@@ -20,36 +20,30 @@
         <p id="alertmsg"></p>
     </div>
     <div class="container-fluid">
-        {% for job_role in job_role_obj %}
+        {% for skill in skill_obj %}
         <div class="card">
             <div class="card-body">
-                <p class="card-text"><strong>Job Role Name:</strong> {{job_role.Job_Role_Name}}</p>
-                <p class="card-text"><strong>Job Role Description:</strong> {{job_role.Job_Role_Desc}}</p>
+                <p class="card-text"><strong>Skill Name:</strong> {{skill.Skill_Name}}</p>
+                <p class="card-text"><strong>Skill Category:</strong> {{skill.Skill_Category}}</p>
                 <p class="card-text">
-                    <strong>Job Role Status:</strong>
-                    {% if job_role.Job_Role_Status == 'Retired' %}
-                    <span class="badge badge-secondary">{{job_role.Job_Role_Status}}</span>
+                    <strong>Skill Status:</strong>
+                    {% if skill.Skill_Status == 'Retired' %}
+                    <span class="badge badge-secondary">{{skill.Skill_Status}}</span>
                     {% else %}
-                    <span class="badge badge-success">{{job_role.Job_Role_Status}}</span>
+                    <span class="badge badge-success">{{skill.Skill_Status}}</span>
                     {% endif %}
                 </p>
-                <p class="card-text"><strong>Job Role Assigned Skills:</strong></p>
-                <ul>
-                    {% for skill in job_role.Job_Role_Required_Skill.all %}
-                        <li>{{skill.Skill_Name}}</li>
-                    {% endfor %}
-                </ul>
-                <a href="{% url 'edit_job_role' job_role.Job_Role_ID %}" class="btn btn-primary">Edit Job Role</a>
-                <button class="btn btn-primary toggle" id="{{job_role.Job_Role_ID}}">Toggle Job Role Status</button>
-                <button class="btn btn-danger delete" id="{{job_role.Job_Role_ID}}">Delete Job Role</button>        
+                <a href="{% url 'edit_skill' skill.Skill_ID %}" class="btn btn-primary">Edit Skill</a>
+                <button class="btn btn-primary toggle" id="{{skill.Skill_ID}}">Toggle Skill Status</button>
+                <button class="btn btn-danger delete" id="{{skill.Skill_ID}}">Delete Skill</button>        
             </div>
         </div>
         {% empty %}
-            <h2>No job roles have been created!</h2>
+            <h2>No skills have been created!</h2>
         {% endfor %}
     </div>
-
-    <!-- modal for toggle job role status -->
+    
+    <!-- modal for toggle skill status -->
     <div class="modal fade" id="toggleModal" tabindex="-1" role="dialog" aria-labelledby="toggleModal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -60,7 +54,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to toggle the status of the job role?
+                    Are you sure you want to toggle the status of the skill?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -70,7 +64,7 @@
         </div>
     </div>
 
-    <!-- modal for toggle job role status -->
+    <!-- modal for toggle skill status -->
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModal" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -81,7 +75,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete the job role?
+                    Are you sure you want to delete the skill?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -90,7 +84,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // populates update/delete message after refresh
         $( document ).ready(function() {
@@ -98,7 +92,7 @@
             $('#alertmsg').html()
             if (sessionStorage.getItem('update')) {
                 $('#alert').removeClass('d-none')
-                $('#alertmsg').html('You have successfully updated the status of a job role!') 
+                $('#alertmsg').html('You have successfully updated the status of a skill!') 
                 setTimeout(function() {
                     $('#alert').alert('close')
                 }, 3000);
@@ -106,7 +100,7 @@
             }
             if (sessionStorage.getItem('delete')) {
                 $('#alert').removeClass('d-none')
-                $('#alertmsg').html('You have successfully deleted a job role!') 
+                $('#alertmsg').html('You have successfully deleted a skill!') 
                 setTimeout(function() {
                     $('#alert').alert('close')
                 }, 3000);
@@ -115,10 +109,10 @@
         });
 
         $('.card').on('click', '.toggle', function() {
-            var job_role_id = this.id
+            var skill_id = this.id
             $('#toggleModal').modal('show')
             $('#toggleButton').on('click', function() {
-                fetch("{% url 'toggle_job_role_status' %}", {
+                fetch("{% url 'toggle_skill_status' %}", {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': '{{ csrf_token }}',
@@ -126,23 +120,23 @@
                     },
                     mode: 'same-origin',
                     body: JSON.stringify({
-                        'job_role_id': job_role_id
+                        'skill_id': skill_id
                     })
                 })
                 .then(res => {
                     if (res.status == 200) {
                         sessionStorage.setItem('update', true);
-                        window.location.replace("{% url 'manage_job_roles' %}")
+                        window.location.replace("{% url 'manage_skill' %}")
                     }
                 })
             })
         })
 
         $('.card').on('click', '.delete', function() {
-            var job_role_id = this.id
+            var skill_id = this.id
             $('#deleteModal').modal('show')
             $('#deleteButton').on('click', function() {
-                fetch("{% url 'delete_job_role' %}", {
+                fetch("{% url 'delete_skill' %}", {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': '{{ csrf_token }}',
@@ -150,18 +144,19 @@
                     },
                     mode: 'same-origin',
                     body: JSON.stringify({
-                        'job_role_id': job_role_id
+                        'skill_id': skill_id
                     })
                 })
                 .then(res => {
                     if (res.status == 200) {
                         sessionStorage.setItem('delete', true);
-                        window.location.replace("{% url 'manage_job_roles' %}")
+                        window.location.replace("{% url 'manage_skill' %}")
                     }
                 })
             })
         })
     </script>
+
 {% else %}
     <h1>Index</h1>
     <p>You are not logged in</p>

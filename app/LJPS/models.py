@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class Staff(models.Model):
     User = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    Staff_ID = models.BigAutoField(primary_key=True)
+    Staff_ID = models.IntegerField(primary_key=True)
     Staff_FName = models.CharField(max_length=50)
     Staff_LName = models.CharField(max_length=50)
     Dept = models.CharField(max_length=50)
@@ -14,18 +14,18 @@ class Staff(models.Model):
         return self.Staff_FName + self.Staff_LName
     
 class Role(models.Model):
-    Role_ID = models.BigAutoField(primary_key=True)
+    Role_ID = models.IntegerField(primary_key=True)
     Role_Name = models.CharField(max_length=20)
     
     def __str__(self):
         return self.Role_Name
 
 class Registration(models.Model):
-    Reg_ID = models.BigAutoField(primary_key=True)
+    Reg_ID = models.IntegerField(primary_key=True)
     Course = models.ForeignKey('Course', on_delete=models.CASCADE) 
     Staff = models.ForeignKey('Staff', on_delete=models.CASCADE) 
-    Reg_Status = models.CharField(max_length=20)
-    Completion_Status = models.CharField(max_length=20)
+    Reg_Status = models.CharField(max_length=20, null=True, blank=True)
+    Completion_Status = models.CharField(max_length=20, null=True, blank=True)
 
 class Skill(models.Model):
     Skill_ID = models.BigAutoField(primary_key=True)

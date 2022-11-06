@@ -3,6 +3,7 @@ class System_Role:
     ADMIN = 'Admin'
     USER = 'User'
     MANAGER = 'Manager'
+    TRAINER = 'Trainer'
 
 # mock skill level enum
 # class Skill_Level:
@@ -26,6 +27,7 @@ class Skill_Course_Category:
 class Status:
     ACTIVE = 'Active'
     RETIRED = 'Retired'
+    PENDING = 'Pending'
 
 # mock course type enum
 class Course_Type:
@@ -41,7 +43,7 @@ class Registration_Status:
 # mock course completion status enum
 class Completion_Status:
     COMPLETED = 'Completed'
-    ONGOING = 'Ongoing'
+    ONGOING = 'OnGoing'
     
 # mock departments for staff
 class Department:

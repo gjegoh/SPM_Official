@@ -12,15 +12,15 @@
     <p><a href="{% url 'logout' %}">Log Out</a></p>
     <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
     <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
-    <p><a href="">Manage All Skills</a></p>
-    <p><a href="">Plan Skills</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
     <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
     <br><br>
     <div class="container-fluid">
         <form action="{% url 'update_job_role' %}" method="POST">
             {% csrf_token %}
             <label for="job_role_name" class="title">Job Role Name:</label>
-            <input id='job_role_name' name="job_role_name" type="text" value="{{chosen_job_role.Job_Role_Name}}" size="50" required>
+            <input id='job_role_name' name="job_role_name" type="text" value="{{chosen_job_role.Job_Role_Name}}" size="50" maxlength="50" required>
             <br>
             <label for="job_role_desc" class="title">Job Role Description:</label>
             <textarea id='job_role_desc' name="job_role_desc" rows="4" cols="50" required>{{chosen_job_role.Job_Role_Desc}}</textarea>
