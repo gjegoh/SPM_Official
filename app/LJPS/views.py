@@ -5,10 +5,11 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.contrib.auth.models import User
 from LJPS.models import Job_Role, Skill, Course, Role, Staff, Registration, Learning_Journey
-from DB_init.enums import System_Role, Course_Status, Registration_Status, Completion_Status
+from DB_init.enums import System_Role, Status, Registration_Status, Completion_Status, Department, Skill_Course_Category
 from django.db.models import Count, Q
 import json
 from collections import Counter
+import inspect
 
 # endpoint to render index page for all users
 def index(request):
@@ -24,17 +25,21 @@ class SignUpView(generic.CreateView):
     success_url = reverse_lazy("login")
     template_name = "registration/signup.html"
 
-# endpoint to render view job roles page for staff
+# endpoint to render view job roles page for users
 def view_job_roles(request):
     if request.method == 'GET':
         staff = Staff.objects.get(User=request.user)
         if staff.Role.Role_Name == System_Role.USER:
-            job_role_obj = Job_Role.objects.all()
+            job_role_obj = Job_Role.objects.order_by('Job_Role_Name')
+            job_role_lst = []
+            for job_role in job_role_obj:
+                if job_role.Job_Role_Status == Status.ACTIVE:
+                    job_role_lst.append(job_role)
             return render(
                 request,
                 'LJPS/view_job_roles.html',
                 context={
-                    'job_role_obj': job_role_obj,
+                    'job_role_obj': job_role_lst,
                 }
             )
         else:
@@ -42,19 +47,23 @@ def view_job_roles(request):
                 request,
                 'LJPS/view_job_roles.html',
             )
-            
-# endpoint to render page for staff to plan their learning journey
+
+# endpoint to render page for user to plan their learning journey
 def plan_learning_journey(request, id):
     if request.method == 'GET':
         staff = Staff.objects.get(User=request.user)
         if staff.Role.Role_Name == System_Role.USER:
             chosen_job_role = Job_Role.objects.get(Job_Role_ID=id)
             required_skill_obj = chosen_job_role.Job_Role_Required_Skill.all()
-            mapped_skill_course_dict= {}
+            required_skill_lst = []
             for skill_obj in required_skill_obj:
+                if skill_obj.Skill_Status == Status.ACTIVE:
+                    required_skill_lst.append(skill_obj)
+            mapped_skill_course_dict= {}
+            for skill_obj in required_skill_lst:
                 mapped_skill_course_dict[skill_obj] = Course.objects.filter(
                     Course_Fulfilled_Skill=skill_obj,
-                    Course_Status=Course_Status.ACTIVE
+                    Course_Status=Status.ACTIVE
                 )
             return render(
                 request,
@@ -70,7 +79,7 @@ def plan_learning_journey(request, id):
                 'LJPS/plan_learning_journey.html',
             )
 
-# endpoint to handle creation of learning journeys for staff
+# endpoint to handle creation of learning journeys for user
 def create_learning_journey(request):
     if request.method == 'POST':
         course_lst = list(set(request.POST.getlist('learningJourney')))
@@ -123,7 +132,7 @@ def create_learning_journey(request):
             }
         )
 
-# endpoint to render page for staff to view/edit their created learning journeys
+# endpoint to render page for user to view/edit their created learning journeys
 def view_learning_journey(request):
     if request.method == 'GET':
         staff = Staff.objects.get(User=request.user)
@@ -164,7 +173,15 @@ def view_learning_journey(request):
             }
         )
 
-# endpoint to render page for staff to edit learning journey
+# endpoint to delete learning journey for user
+def delete_learning_journey(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        learning_journey_id = request_body['learning_journey_id']
+        Learning_Journey.objects.get(Learning_Journey_ID=learning_journey_id).delete()
+        return HttpResponse(200)
+
+# endpoint to render page for user to edit learning journey
 def edit_learning_journey(request, id):
     if request.method == 'GET':
         staff = Staff.objects.get(User=request.user)
@@ -172,13 +189,17 @@ def edit_learning_journey(request, id):
             chosen_learning_journey = Learning_Journey.objects.get(Learning_Journey_ID=id)
             chosen_job_role = chosen_learning_journey.Job_Role
             required_skill_obj = chosen_job_role.Job_Role_Required_Skill.all()
+            required_skill_lst = []
+            for skill_obj in required_skill_obj:
+                if skill_obj.Skill_Status == Status.ACTIVE:
+                    required_skill_lst.append(skill_obj)
             chosen_course_objs = chosen_learning_journey.Learning_Journey_Course.all()
             mapped_skill_course_dict= {}
-            for skill_obj in required_skill_obj:
+            for skill_obj in required_skill_lst:
                 related_course_dict = {}
                 related_course_lst = Course.objects.filter(
                     Course_Fulfilled_Skill=skill_obj,
-                    Course_Status=Course_Status.ACTIVE
+                    Course_Status=Status.ACTIVE
                 )
                 for course in related_course_lst:
                     if course in chosen_course_objs:
@@ -201,7 +222,7 @@ def edit_learning_journey(request, id):
                 'LJPS/edit_learning_journey.html',
             )
 
-# endpoint to handle update of learning journeys for staff
+# endpoint to handle update of learning journeys for user
 def update_learning_journey(request):
     if request.method == 'POST':
         new_course_lst = list(set(request.POST.getlist('learningJourney')))
@@ -262,14 +283,6 @@ def update_learning_journey(request):
                 'status': status
             }
         )
-
-# endpoint to delete learning journey for staff
-def delete_learning_journey(request):
-    if request.method == 'POST':
-        request_body = json.loads(request.body)
-        learning_journey_id = request_body['learning_journey_id']
-        Learning_Journey.objects.get(Learning_Journey_ID=learning_journey_id).delete()
-        return HttpResponse(200)
 
 # endpoint to render page for admin to manage job roles
 def manage_job_roles(request):
@@ -381,6 +394,26 @@ def update_job_role(request):
             }
         )
 
+# endpoint to toggle job role status for admin
+def toggle_job_role_status(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        job_role_id = request_body['job_role_id']
+        job_role = Job_Role.objects.get(Job_Role_ID=job_role_id)
+        if job_role.Job_Role_Status == Status.ACTIVE:
+            Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=Status.RETIRED)
+        else:
+            Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=Status.ACTIVE)
+        return HttpResponse(200)
+    
+# endpoint to delete job role for admin
+def delete_job_role(request):
+    if request.method == 'POST':
+        request_body = json.loads(request.body)
+        job_role_id = request_body['job_role_id']
+        Job_Role.objects.get(Job_Role_ID=job_role_id).delete()
+        return HttpResponse(200)
+    
 # endpoint to render page for admin to plan job role
 def plan_job_role(request):
     if request.method == 'GET':
@@ -447,22 +480,232 @@ def create_job_role(request):
             }
         )
 
-# endpoint to toggle job role status for admin
-def toggle_job_role_status(request):
+# endpoint to render page for admin to manage skills
+def manage_skill(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            skill_obj = Skill.objects.order_by('Skill_Name')
+            return render(
+                request,
+                'LJPS/manage_skill.html',
+                context={
+                    'skill_obj': skill_obj,
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/manage_skill.html',
+            )
+            
+# endpoint to render page for admin to edit skill
+def edit_skill(request, id):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            chosen_skill = Skill.objects.get(Skill_ID=id)
+            attributes = inspect.getmembers(Skill_Course_Category, lambda a:not(inspect.isroutine(a)))
+            skill_category = [a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
+            return render(
+                request,
+                'LJPS/edit_skill.html',
+                context={
+                    'chosen_skill': chosen_skill,
+                    'skill_category': skill_category
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/edit_skill.html',
+            )
+
+# endpoint to handle update of skill for admin
+def update_skill(request):
+    if request.method == 'POST':
+        message = "You have successfully updated a skill!"
+        status = 'success'
+        skill_id = int(request.POST.get('skill_id'))
+        new_skill_name = request.POST.get('skill_name')
+        new_skill_category = request.POST.get('skill_category')
+        new_skill_status = request.POST.get('skill_status')
+        skill = Skill.objects.get(Skill_ID=skill_id)
+        if new_skill_name.lower() == skill.Skill_Name.lower() and new_skill_category.lower() == skill.Skill_Category.lower() and new_skill_status == skill.Skill_Status:
+            message = "No changes to the skill was made!!"
+            status = 'failed'
+        else:
+            if new_skill_name.lower() != skill.Skill_Name.lower():
+                if len(Skill.objects.filter(Skill_Name__iexact=new_skill_name)) > 0:
+                    message = "A skill with your specified name already exists!"
+                    status = 'failed'
+                else:
+                    Skill.objects.filter(Skill_ID=skill_id).update(Skill_Name=new_skill_name.title())
+            if status == 'success':
+                if new_skill_category.lower() != skill.Skill_Category.lower():
+                        Skill.objects.filter(Skill_ID=skill_id).update(Skill_Category=new_skill_category.title())
+                if new_skill_status != skill.Skill_Status:
+                    Skill.objects.filter(Skill_ID=skill_id).update(Skill_Status=new_skill_status)
+        return render(
+            request,
+            'LJPS/update_skill.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )
+
+# endpoint to toggle skill status for admin
+def toggle_skill_status(request):
     if request.method == 'POST':
         request_body = json.loads(request.body)
-        job_role_id = request_body['job_role_id']
-        job_role = Job_Role.objects.get(Job_Role_ID=job_role_id)
-        if job_role.Job_Role_Status == Status.ACTIVE:
-            Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=Status.RETIRED)
+        skill_id = request_body['skill_id']
+        skill = Skill.objects.get(Skill_ID=skill_id)
+        if skill.Skill_Status == Status.ACTIVE:
+            Skill.objects.filter(Skill_ID=skill_id).update(Skill_Status=Status.RETIRED)
         else:
-            Job_Role.objects.filter(Job_Role_ID=job_role_id).update(Job_Role_Status=Status.ACTIVE)
+            Skill.objects.filter(Skill_ID=skill_id).update(Skill_Status=Status.ACTIVE)
         return HttpResponse(200)
     
-# endpoint to delete job role for admin
-def delete_job_role(request):
+# endpoint to delete skill for admin
+def delete_skill(request):
     if request.method == 'POST':
         request_body = json.loads(request.body)
-        job_role_id = request_body['job_role_id']
-        Job_Role.objects.get(Job_Role_ID=job_role_id).delete()
+        skill_id = request_body['skill_id']
+        Skill.objects.get(Skill_ID=skill_id).delete()
         return HttpResponse(200)
+
+# endpoint to render page for admin to plan skills
+def plan_skill(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            attributes = inspect.getmembers(Skill_Course_Category, lambda a:not(inspect.isroutine(a)))
+            skill_category = [a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
+            return render(
+                request,
+                'LJPS/plan_skill.html',
+                context={
+                    'skill_category': skill_category
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/plan_skill.html',
+            )
+
+# endpoint to handle creation of skill for admin
+def create_skill(request):
+    if request.method == 'POST':
+        message = "You have successfully created a skill!"
+        status = 'success'
+        skill_name = request.POST.get('skill_name')
+        skill_category = request.POST.get('skill_category')
+        skill_status = request.POST.get('skill_status')
+        if len(Skill.objects.filter(Skill_Name__iexact=skill_name)) > 0:
+            message = "A skill with your specified name already exists!"
+            status = 'failed'
+        else:
+            Skill.objects.create(
+                Skill_Name=skill_name.title(), 
+                Skill_Category=skill_category.title(),
+                Skill_Status=skill_status
+            )
+        return render(
+            request,
+            'LJPS/create_skill.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )
+
+# endpoint to render page for admin to manage courses
+def manage_course(request):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            course_obj = Course.objects.order_by('Course_ID')
+            return render(
+                request,
+                'LJPS/manage_course.html',
+                context={
+                    'course_obj': course_obj
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/manage_course.html',
+            )
+            
+# endpoint to render page for admin to edit courses
+def edit_course(request, id):
+    if request.method == 'GET':
+        staff = Staff.objects.get(User=request.user)
+        if staff.Role.Role_Name == System_Role.ADMIN:
+            chosen_course = Course.objects.get(Course_ID=id)
+            all_skills = Skill.objects.filter(Skill_Status=Status.ACTIVE)
+            fulfilled_skills = chosen_course.Course_Fulfilled_Skill.all()
+            return render(
+                request,
+                'LJPS/edit_course.html',
+                context={
+                    'chosen_course': chosen_course,
+                    'all_skills': all_skills,
+                    'fulfilled_skills': fulfilled_skills
+                }
+            )
+        else:
+            return render(
+                request,
+                'LJPS/edit_course.html',
+            )
+            
+# endpoint to handle update of courses for admin
+def update_course(request):
+    if request.method == 'POST':
+        message = "You have successfully updated a course!"
+        status = 'success'
+        new_skill_lst = list(set(request.POST.getlist('fulfilled_skills')))
+        course_id = request.POST.get('course_id')
+        course = Course.objects.get(Course_ID=course_id)
+        new_skill_obj = []
+        for skill_id in new_skill_lst:
+            skill = Skill.objects.get(Skill_ID=skill_id)
+            new_skill_obj.append(skill)
+        old_skill_lst = course.Course_Fulfilled_Skill.all()
+        skill_unchanged = Counter(new_skill_obj) == Counter(old_skill_lst)
+        if skill_unchanged:
+            message = "No changes to the course was made!"
+            status = 'failed'
+        elif skill_unchanged == False:
+            duplicate_check = Course.objects.annotate(
+                num_courses=Count('Course_Fulfilled_Skill'),
+                num_courses_match=Count(
+                    'Course_Fulfilled_Skill', 
+                    filter=Q(Course_Fulfilled_Skill__in=new_skill_obj)
+                )
+            ).filter(
+                num_courses=len(new_skill_obj),
+                num_courses_match=len(new_skill_obj)
+            )
+            if duplicate_check.exists():
+                message = "A course with your fulfilled skills already exists!"
+                status = 'failed'
+            else:
+                for skill in new_skill_obj:
+                    if skill not in old_skill_lst:
+                        course.Course_Fulfilled_Skill.add(skill)
+                for skill in old_skill_lst:
+                    if skill not in new_skill_obj:
+                        course.Course_Fulfilled_Skill.remove(skill)
+        return render(
+            request,
+            'LJPS/update_course.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )

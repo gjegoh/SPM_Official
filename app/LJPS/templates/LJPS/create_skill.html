@@ -2,23 +2,25 @@
 {% load static %}
 
 {% block head %}
-{% block title %}Create Your Learning Journey{% endblock %}
+{% block title %}Create Skill{% endblock %}
 {% endblock %}
 
 {% block body %}
-{% if user.is_authenticated %}
-    <h1>Create Your Learning Journey</h1>
+{% if user.is_authenticated and user.is_staff %}
+    <h1>Create Skill</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
-    <p><a href="{% url 'view_job_roles' %}">View Available Job Roles</a></p>
-    <p><a href="{% url 'view_learning_journey' %}">View My Learning Journeys</a></p>
+    <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
+    <p><a href="{% url 'plan_job_role' %}">Plan Job Roles</a></p>
+    <p><a href="{% url 'manage_skill' %}">Manage All Skills</a></p>
+    <p><a href="{% url 'plan_skill' %}">Plan Skills</a></p>
+    <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
     <br><br>
     {% if status == 'success' %}
     <h2 class="text-success">{{message}}</h2>
     {% elif status == 'failed' %}
     <h2 class="text-danger">{{message}}</h2>
     {% endif %}
-    
 {% else %}
 <h1>Index Page</h1>
     <p>You are not logged in</p>

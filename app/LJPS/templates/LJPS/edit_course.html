@@ -2,12 +2,12 @@
 {% load static %}
 
 {% block head %}
-{% block title %}Edit Job Role{% endblock %}
+{% block title %}Edit Course{% endblock %}
 {% endblock %}
 
 {% block body %}
 {% if user.is_authenticated and user.is_staff %}
-    <h1>Edit Job Role</h1>
+    <h1>Edit Course</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
     <p><a href="{% url 'manage_job_roles' %}">Manage All Job Roles</a></p>
@@ -17,39 +17,24 @@
     <p><a href="{% url 'manage_course' %}">Manage All Courses</a></p>
     <br><br>
     <div class="container-fluid">
-        <form action="{% url 'update_job_role' %}" method="POST">
+        <form action="{% url 'update_course' %}" method="POST">
             {% csrf_token %}
-            <label for="job_role_name" class="title">Job Role Name:</label>
-            <input id='job_role_name' name="job_role_name" type="text" value="{{chosen_job_role.Job_Role_Name}}" size="50" maxlength="50" required>
-            <br>
-            <label for="job_role_desc" class="title">Job Role Description:</label>
-            <textarea id='job_role_desc' name="job_role_desc" rows="4" cols="50" required>{{chosen_job_role.Job_Role_Desc}}</textarea>
-            <br>
-            <label for="job_role_status" class="title">Job Role Status:</label>
-            <select id="job_role_status" name="job_role_status">
-                {% if chosen_job_role.Job_Role_Status == 'Active' %}
-                <option value="Active" selected>Active</option>
-                <option value="Retired">Retired</option>
-                {% else %}
-                <option value="Active">Active</option>
-                <option value="Retired" selected>Retired</option>
-                {% endif %}
-            </select>
-            <br>
-            <p class="title">Assigned Skills:</p>
+            <p><span class="title">Course ID:</span> {{chosen_course.Course_ID}}</p>
+            <p><span class="title">Course Name:</span> {{chosen_course.Course_Name}}</p>
+            <p class="title">Fulfilled Skills:</p>
             {% for skill in all_skills %}
-                {% if skill in assigned_skills %}
-                <input class="skill" name='assigned_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}" checked>
+                {% if skill in fulfilled_skills %}
+                <input class="skill" name='fulfilled_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}" checked>
                 <label for="{{skill.Skill_ID}}">{{skill.Skill_Name}}</label>
                 {% else %}
-                <input class="skill" name='assigned_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}">
+                <input class="skill" name='fulfilled_skills' type="checkbox" id="{{skill.Skill_ID}}" value="{{skill.Skill_ID}}">
                 <label for="{{skill.Skill_ID}}">{{skill.Skill_Name}}</label>
                 {% endif %}
                 <br>
             {% endfor %}
             <br>
-            <input type="hidden" name='job_role_id' value="{{chosen_job_role.Job_Role_ID}}">
-            <input class="btn btn-primary" type="submit" value="Update Job Role">
+            <input type="hidden" name='course_id' value="{{chosen_course.Course_ID}}">
+            <input class="btn btn-primary" type="submit" value="Update Course">
         </form>
 
         <!-- modal for alert -->
@@ -71,7 +56,7 @@
         </div>
     </div>
     
-    <script src="{% static 'LJPS/js/edit_job_role.js' %}"></script>
+    <script src="{% static 'LJPS/js/edit_course.js' %}"></script>
     
 {% else %}
     <h1>Index</h1>

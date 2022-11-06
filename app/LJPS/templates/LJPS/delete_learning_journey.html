@@ -10,7 +10,7 @@
     <h1>Delete Your Learning Journey</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
-    <p><a href="{% url 'view_job_roles' %}">View Job Roles</a></p>
+    <p><a href="{% url 'view_job_roles' %}">View Available Job Roles</a></p>
     <p><a href="{% url 'view_learning_journey' %}">View My Learning Journeys</a></p>
     <br><br>
     {% if status == 'success' %}

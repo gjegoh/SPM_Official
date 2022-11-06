@@ -10,7 +10,7 @@
     <h1>View My Learning Journeys</h1>
     <p>Hi {{ user.username }}!</p>
     <p><a href="{% url 'logout' %}">Log Out</a></p>
-    <p><a href="{% url 'view_job_roles' %}">View Job Roles</a></p>
+    <p><a href="{% url 'view_job_roles' %}">View Available Job Roles</a></p>
     <br><br>
     <div class="alert alert-success" id="delete-alert">
         <button type="button" class="close" data-dismiss="alert">x</button>
@@ -80,6 +80,7 @@
         </div>
     </div>
 
+    
     <script>
         // confirms and executes deletion of learning journey
         $('.card').unbind('click').on('click', '.btn-danger', function() {
@@ -118,7 +119,6 @@
             }
         });
     </script>
-    
     
 {% else %}
 <h1>Index Page</h1>
