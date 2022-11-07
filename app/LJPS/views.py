@@ -112,15 +112,16 @@ def create_learning_journey(request):
             )
             
             for course in chosen_course_objs:
-                Registration.objects.get_or_create(
-                    Course=course,
-                    Staff=staff,
-                    defaults={
-                        'Reg_Status': Registration_Status.REGISTERED,
-                        'Completion_Status': Completion_Status.ONGOING
-                    }
-                )
                 learning_journey.Learning_Journey_Course.add(course)
+            #     Registration.objects.get_or_create(
+            #         Course=course,
+            #         Staff=staff,
+            #         defaults={
+            #             'Reg_Status': Registration_Status.REGISTERED,
+            #             'Completion_Status': Completion_Status.ONGOING
+            #         }
+            #     )
+                
             message = "You have successfully created a learning journey!"
             status = 'success'
         return render(
@@ -143,10 +144,14 @@ def view_learning_journey(request):
             course_lst = learning_journey.Learning_Journey_Course.all()
             skill_lst = learning_journey.Job_Role.Job_Role_Required_Skill.all()
             for course in course_lst:
-                course_status = Registration.objects.get(
+                reg_obj = Registration.objects.filter(
                     Course=course,
                     Staff=staff
-                ).Completion_Status
+                )
+                if len(reg_obj) > 0:
+                    course_status = reg_obj[0].Completion_Status
+                else:
+                    course_status = ""
                 mapped_course_skill[course.Course_Name] = {
                     'course_status': course_status,
                     'fulfilled_skills': course.Course_Fulfilled_Skill.all()
@@ -257,22 +262,22 @@ def update_learning_journey(request):
             else:
                 for course in new_course_objs:
                     if course not in old_course_lst:
-                        Registration.objects.get_or_create(
-                            Course=course,
-                            Staff=staff,
-                            defaults={
-                                'Reg_Status': Registration_Status.REGISTERED,
-                                'Completion_Status': Completion_Status.ONGOING
-                            }
-                        )
                         learning_journey.Learning_Journey_Course.add(course)
+                        # Registration.objects.get_or_create(
+                        #     Course=course,
+                        #     Staff=staff,
+                        #     defaults={
+                        #         'Reg_Status': Registration_Status.REGISTERED,
+                        #         'Completion_Status': Completion_Status.ONGOING
+                        #     }
+                        # )
                 for course in old_course_lst:
                     if course not in new_course_objs:
-                        Registration.objects.get(
-                            Course=course,
-                            Staff=staff,
-                        ).delete()
                         learning_journey.Learning_Journey_Course.remove(course)
+                        # Registration.objects.get(
+                        #     Course=course,
+                        #     Staff=staff,
+                        # ).delete()
                 message = "You have successfully updated your learning journey!"
                 status = 'success'
         return render(
