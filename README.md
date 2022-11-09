@@ -7,16 +7,24 @@ Personal learning journey tracker for staff to plan their own learning journey, 
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
     - Has support for Windows and MacOS
 - Clone this repo:
-    $ git clone git@github.com:gjegoh/SPM_Official.git
-    $ cd SPM_Official
+~~~
+git clone git@github.com:gjegoh/SPM_Official.git
+cd SPM_Official
+~~~
 
 ## Steps to Running the Project
 - If running the project for the first time, build and start the container:
-    $ docker-compose up --build
+~~~
+docker-compose up --build
+~~~
 - If container is already built:
-    $ docker-compose up
+~~~
+docker-compose up
+~~~
 - If trying to wipe the local database:
-    $ docker-compose down --volumes
+~~~
+docker-compose down --volumes
+~~~
 
 ## How to use the Project
 - To login as a user:
