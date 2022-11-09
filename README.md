@@ -33,7 +33,12 @@ $ docker-compose down --volumes
 - To login as a admin:
     - Username: admin
     - Password: admin
-    
+
+## Troubleshooting
+- If docker-entrypoint.sh cannot be found when building and starting the container:
+    - Navigate to ./app directory and find docker-entrypoint.sh, using an IDE such as VSC
+    - At the bottom-left task bar, ensure end of line sequence is LF and save file with UTF-8 encoding
+
 # Credits
 - Group 4:
     - Goh Jia En
