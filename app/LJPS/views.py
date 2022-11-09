@@ -440,51 +440,50 @@ def plan_job_role(request):
 
 # endpoint to handle creation of job roles for admin
 def create_job_role(request):
-    return
-    # if request.method == 'POST':
-    #     message = "You have successfully created a job role!"
-    #     status = 'success'
-    #     skill_lst = list(set(request.POST.getlist('assigned_skills')))
-    #     job_role_name = request.POST.get('job_role_name')
-    #     job_role_desc = request.POST.get('job_role_desc')
-    #     job_role_status = request.POST.get('job_role_status')
-    #     if len(Job_Role.objects.filter(Job_Role_Name__iexact=job_role_name)) > 0:
-    #         message = "A job role with your specified name already exists!"
-    #         status = 'failed'
-    #     else:
-    #         skill_obj = []
-    #         for skill_id in skill_lst:
-    #             skill = Skill.objects.get(Skill_ID=skill_id)
-    #             skill_obj.append(skill)
-    #         duplicate_check = Job_Role.objects.annotate(
-    #             num_courses=Count('Job_Role_Required_Skill'),
-    #             num_courses_match=Count(
-    #                 'Job_Role_Required_Skill', 
-    #                 filter=Q(Job_Role_Required_Skill__in=skill_obj)
-    #             )
-    #         ).filter(
-    #             num_courses=len(skill_obj),
-    #             num_courses_match=len(skill_obj)
-    #         )
-    #         if duplicate_check.exists():
-    #             message = "A job role with your assigned skills already exists!"
-    #             status = 'failed'
-    #         else:
-    #             new_job_role = Job_Role.objects.create(
-    #                 Job_Role_Name=job_role_name.title(),
-    #                 Job_Role_Desc=job_role_desc,
-    #                 Job_Role_Status=job_role_status
-    #             )
-    #             for skill in skill_obj:
-    #                 new_job_role.Job_Role_Required_Skill.add(skill)
-    #     return render(
-    #         request,
-    #         'LJPS/create_job_role.html',
-    #         context={
-    #             'message': message,
-    #             'status': status
-    #         }
-    #     )
+    if request.method == 'POST':
+        message = "You have successfully created a job role!"
+        status = 'success'
+        skill_lst = list(set(request.POST.getlist('assigned_skills')))
+        job_role_name = request.POST.get('job_role_name')
+        job_role_desc = request.POST.get('job_role_desc')
+        job_role_status = request.POST.get('job_role_status')
+        if len(Job_Role.objects.filter(Job_Role_Name__iexact=job_role_name)) > 0:
+            message = "A job role with your specified name already exists!"
+            status = 'failed'
+        else:
+            skill_obj = []
+            for skill_id in skill_lst:
+                skill = Skill.objects.get(Skill_ID=skill_id)
+                skill_obj.append(skill)
+            duplicate_check = Job_Role.objects.annotate(
+                num_courses=Count('Job_Role_Required_Skill'),
+                num_courses_match=Count(
+                    'Job_Role_Required_Skill', 
+                    filter=Q(Job_Role_Required_Skill__in=skill_obj)
+                )
+            ).filter(
+                num_courses=len(skill_obj),
+                num_courses_match=len(skill_obj)
+            )
+            if duplicate_check.exists():
+                message = "A job role with your assigned skills already exists!"
+                status = 'failed'
+            else:
+                new_job_role = Job_Role.objects.create(
+                    Job_Role_Name=job_role_name.title(),
+                    Job_Role_Desc=job_role_desc,
+                    Job_Role_Status=job_role_status
+                )
+                for skill in skill_obj:
+                    new_job_role.Job_Role_Required_Skill.add(skill)
+        return render(
+            request,
+            'LJPS/create_job_role.html',
+            context={
+                'message': message,
+                'status': status
+            }
+        )
 
 # endpoint to render page for admin to manage skills
 def manage_skill(request):
@@ -603,30 +602,30 @@ def plan_skill(request):
 
 # endpoint to handle creation of skill for admin
 def create_skill(request):
-    # return
-    if request.method == 'POST':
-        message = "You have successfully created a skill!"
-        status = 'success'
-        skill_name = request.POST.get('skill_name')
-        skill_category = request.POST.get('skill_category')
-        skill_status = request.POST.get('skill_status')
-        if len(Skill.objects.filter(Skill_Name__iexact=skill_name)) > 0:
-            message = "A skill with your specified name already exists!"
-            status = 'failed'
-        else:
-            Skill.objects.create(
-                Skill_Name=skill_name.title(), 
-                Skill_Category=skill_category.title(),
-                Skill_Status=skill_status
-            )
-        return render(
-            request,
-            'LJPS/create_skill.html',
-            context={
-                'message': message,
-                'status': status
-            }
-        )
+    return
+    # if request.method == 'POST':
+    #     message = "You have successfully created a skill!"
+    #     status = 'success'
+    #     skill_name = request.POST.get('skill_name')
+    #     skill_category = request.POST.get('skill_category')
+    #     skill_status = request.POST.get('skill_status')
+    #     if len(Skill.objects.filter(Skill_Name__iexact=skill_name)) > 0:
+    #         message = "A skill with your specified name already exists!"
+    #         status = 'failed'
+    #     else:
+    #         Skill.objects.create(
+    #             Skill_Name=skill_name.title(), 
+    #             Skill_Category=skill_category.title(),
+    #             Skill_Status=skill_status
+    #         )
+    #     return render(
+    #         request,
+    #         'LJPS/create_skill.html',
+    #         context={
+    #             'message': message,
+    #             'status': status
+    #         }
+    #     )
 
 # endpoint to render page for admin to manage courses
 def manage_course(request):
