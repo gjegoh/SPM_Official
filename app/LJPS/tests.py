@@ -18,13 +18,21 @@ class TestSkills(TestCase):
         self.delete_skill = reverse('delete_skill')
         self.update_skill = reverse('update_skill')
         self.create_skill = reverse('create_skill')
+        self.toggle_skill_status = reverse('toggle_skill_status')
         Skill.objects.create(Skill_Category=Skill_Course_Category.CORE, Skill_Name="Interpersonal Skills", Skill_Status=Status.ACTIVE)
     
-    def test_skill_creation(self):
-        interpersonal_skill = Skill.objects.get(Skill_Name="Interpersonal Skills")
-        self.assertEqual(interpersonal_skill.Skill_Name, 'Interpersonal Skills')
-        self.assertEqual(interpersonal_skill.Skill_Category, Skill_Course_Category.CORE)
-        self.assertEqual(interpersonal_skill.Skill_Status, Status.ACTIVE)
+    def test_create_skill_POST(self):
+        response = self.client.post(self.create_skill, {
+            'skill_category': Skill_Course_Category.CORE,
+            'skill_name': "Interpersonal Skills", 
+            'skill_status': Status.ACTIVE
+        })
+        self.assertEquals(response.status_code, 200)
+
+        skill = Skill.objects.get(Skill_ID=10)
+        self.assertEquals(skill.Skill_Name, 'Interpersonal Skills')
+        self.assertEquals(skill.Skill_Category, Skill_Course_Category.CORE)
+        self.assertEquals(skill.Skill_Status, Status.ACTIVE)
 
     def test_plan_skill_view(self):
         request = self.factory.get('LJPS/plan_skill.html')
@@ -70,7 +78,7 @@ class TestSkills(TestCase):
     def test_update_skill_post_success(self):
         response = self.client.post(self.update_skill, {
             'skill_id': 1,
-            'skill_category': Skill_Course_Category.CORE,
+            'skill_category': Skill_Course_Category.SALES,
             'skill_name': "New Interpersonal Skills", 
             'skill_status': Status.RETIRED
         })
@@ -100,6 +108,14 @@ class TestSkills(TestCase):
         self.assertEquals(response.context['status'], 'failed')
         self.assertEquals(response.context['message'], 'A skill with your specified name already exists!')
 
+    def test_toggle_skill_status(self):
+        response = self.client.post(
+            self.toggle_skill_status,
+            content_type='application/json', 
+            data=json.dumps({'skill_id': 1})
+        )
+        self.assertEquals(response.status_code, 200)
+
     def test_delete_skill(self):
         response = self.client.post(
             self.delete_skill,
@@ -107,17 +123,3 @@ class TestSkills(TestCase):
             data=json.dumps({'skill_id': 1})
         )
         self.assertEquals(response.status_code, 200)
-
-    
-
-    
-
-
-
-
-
-   
-
-    
-
-  
