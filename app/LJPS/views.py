@@ -602,29 +602,30 @@ def plan_skill(request):
 
 # endpoint to handle creation of skill for admin
 def create_skill(request):
-    if request.method == 'POST':
-        message = "You have successfully created a skill!"
-        status = 'success'
-        skill_name = request.POST.get('skill_name')
-        skill_category = request.POST.get('skill_category')
-        skill_status = request.POST.get('skill_status')
-        if len(Skill.objects.filter(Skill_Name__iexact=skill_name)) > 0:
-            message = "A skill with your specified name already exists!"
-            status = 'failed'
-        else:
-            Skill.objects.create(
-                Skill_Name=skill_name.title(), 
-                Skill_Category=skill_category.title(),
-                Skill_Status=skill_status
-            )
-        return render(
-            request,
-            'LJPS/create_skill.html',
-            context={
-                'message': message,
-                'status': status
-            }
-        )
+    return
+    # if request.method == 'POST':
+    #     message = "You have successfully created a skill!"
+    #     status = 'success'
+    #     skill_name = request.POST.get('skill_name')
+    #     skill_category = request.POST.get('skill_category')
+    #     skill_status = request.POST.get('skill_status')
+    #     if len(Skill.objects.filter(Skill_Name__iexact=skill_name)) > 0:
+    #         message = "A skill with your specified name already exists!"
+    #         status = 'failed'
+    #     else:
+    #         Skill.objects.create(
+    #             Skill_Name=skill_name.title(), 
+    #             Skill_Category=skill_category.title(),
+    #             Skill_Status=skill_status
+    #         )
+    #     return render(
+    #         request,
+    #         'LJPS/create_skill.html',
+    #         context={
+    #             'message': message,
+    #             'status': status
+    #         }
+    #     )
 
 # endpoint to render page for admin to manage courses
 def manage_course(request):
